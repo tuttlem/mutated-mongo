@@ -14,12 +14,16 @@ Clients can subsribe to
 
 Firstly, you'll need MongoDB running in a state where it offers an oplog. Once you've got that, all you should need to do is the following:
 
-   $ pip install -r requirements.txt
-   $ python mutated.py
+```
+$ pip install -r requirements.txt
+$ python mutated.py
+```
 
 The mutated server will now be running. You can test that it's all up ok by running the client like so:
 
-   $ python test_client.py
+```
+$ python test_client.py
+```
 
 The client library (in `client.py`) will allow you to integrate this server into any of your python projects.
 
