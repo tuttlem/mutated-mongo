@@ -5,6 +5,9 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from bson.json_util import dumps, loads
 
+from control import fail
+
+server = None
 clients = {}
 
 class MutantRequestHandler(SocketServer.BaseRequestHandler):
@@ -39,18 +42,21 @@ def run_server(config):
       messages"""
 
    server = SocketServer.TCPServer(
-      (config['server_host'], config['server_port']), MutantRequestHandler
+      (config.server_host, config.server_port), MutantRequestHandler
    )
 
    try:
       server.serve_forever()
+
+   except:
+      fail("Server failed to run")
 
    finally:
       server.shutdown()
 
 def broadcast(cs, doc, config):
    # connect to the target mongo server
-   mongo_url = 'mongodb://%s:%s' % (config['mongo_host'], config['mongo_port'])
+   mongo_url = 'mongodb://%s:%s' % (config.mongo_host, config.mongo_port)
    db = MongoClient(mongo_url).local
 
    # prepare the message now (just once)

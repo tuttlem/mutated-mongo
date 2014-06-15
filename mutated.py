@@ -3,31 +3,54 @@
 import thread
 import time
 import sys
+from optparse import OptionParser
 
 from distributor import run_distributor
 from server import run_server
 from observer import run_observer
 
-config = {
-   'mongo_host': '192.168.56.101',
-   'mongo_port': 27017,
-   'observer_sleep': 1,
-   'queue_block': 5,
-   'server_host': '127.0.0.1',
-   'server_port': 9994
-}
+import control
 
 def main():
+    usage = "usage: %prog [options]"
+    parser = OptionParser(usage=usage)
+
+    parser.add_option("-m", "--host", dest="mongo_host",
+                                      help="mongo host to listen to",
+                                      default="localhost")
+
+    parser.add_option("-p", "--port", dest="mongo_port",
+                                      help="mongo port to listen on",
+                                      default=27017)
+
+    parser.add_option("-s", "--sleep", dest="observer_sleep",
+                                       help="seconds the observer sleeps after exhausting all records from the cursor",
+                                       default=1)
+
+    parser.add_option("-b", "--block", dest="queue_block",
+                                       help="seconds the distributor sleeps for after timeing out waiting for work",
+                                       default=5)
+
+    parser.add_option("-a", "--shost", dest="server_host",
+                                         help="host address that this server will start on",
+                                         default="localhost")
+
+    parser.add_option("-n", "--sport", dest="server_port",
+                                       help="host port that this server will start on",
+                                       default=9994)
+
+    (config, args) = parser.parse_args()
+
     try:
-        thread.start_new_thread(run_observer, (config,))
-        thread.start_new_thread(run_distributor, (config,))
-        thread.start_new_thread(run_server, (config,))
+        observer_thread = thread.start_new_thread(run_observer, (config,))
+        distributor_thread = thread.start_new_thread(run_distributor, (config,))
+        server_thread = thread.start_new_thread(run_server, (config,))
     except:
         print 'Error: Unable to start the processing threads'
         sys.exit(1)
 
-    while True:
-        time.sleep(10000)
+    while control.running == True:
+        time.sleep(1)
 
 if __name__ == '__main__':
    main()
